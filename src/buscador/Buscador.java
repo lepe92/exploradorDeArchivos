@@ -15,9 +15,9 @@ import org.apache.pdfbox.util.PDFTextStripper;
 import org.apache.pdfbox.util.PDFTextStripperByArea;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
-import javax.swing.text.rtf.*;
+//import javax.swing.text.rtf.*;
 import javax.swing.JEditorPane;
-import javax.swing.text.BadLocationException;
+//import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
 
 public class Buscador 
@@ -25,6 +25,9 @@ public class Buscador
 
     JList Lista;
     DefaultListModel modelo;
+    
+    boolean DocXselected, DocSelected, PDFselected, TXTselected, RTFselected;
+    boolean JavaSelected, cppSelected;
     
     public void buscarArchivoporContenido(File argFile, String match)
     {
@@ -52,12 +55,12 @@ public class Buscador
     
     public void buscarContenidoenelArchivo(File f, String match, int tipo)
     {
-        boolean found;
         String contenido;
         
         switch(tipo)
         {
             case 1 : // docx
+                if(DocXselected)
                 try
                 {
                     XWPFDocument docx = new XWPFDocument(new FileInputStream(f));
@@ -67,14 +70,12 @@ public class Buscador
                     
                     if(contenido.contains(match))
                     {
-                        found = true;
                         modelo.addElement(f.getAbsoluteFile());
-                        //Lista.setModel(modelo);
-                        System.out.println(f.getAbsoluteFile());
                     }
                 }catch(Exception e){}
                 break;
             case 2 : // doc
+                if(DocSelected)
                 try
                 {
                     HWPFDocument doc = new HWPFDocument(new FileInputStream(f));
@@ -84,14 +85,12 @@ public class Buscador
                     
                     if(contenido.contains(match))
                     {
-                        found = true;
                         modelo.addElement(f.getAbsoluteFile());
-                        //Lista.setModel(modelo);
-                        System.out.println(f.getAbsoluteFile());
                     }
                 }catch(Exception e){}
                 break;
             case 3 : // txt
+                if(TXTselected)
                 try
                 {
                     BufferedReader in = new BufferedReader(new FileReader(f));
@@ -101,18 +100,17 @@ public class Buscador
                     
                     while(contenido != null)
                     {
-                        contenido = in.readLine();
                         if(contenido.contains(match))
                         {
                             modelo.addElement(f.getAbsoluteFile());
-                            //Lista.setModel(modelo);
-                            System.out.println(f.getAbsoluteFile());
                             break;
                         }
+                        contenido = in.readLine();
                     }
                 }catch(Exception e){}
                 break;
             case 4 : // pdf
+                if(PDFselected)
                 try
                 {
                     PDDocument documento = null;
@@ -127,16 +125,14 @@ public class Buscador
                         
                         if(contenido.contains(match))
                         {
-                            found = true;
                             modelo.addElement(f.getAbsoluteFile());
-                            //Lista.setModel(modelo);
-                            System.out.println(f.getAbsoluteFile());
                         }
                     }
                     documento.close();
                 }catch(Exception e){}
                 break;
             case 5 : // rtf
+                if(RTFselected)
                 try
                 {
                     JEditorPane p = new JEditorPane();
@@ -152,11 +148,50 @@ public class Buscador
                     
                     if(contenido.contains(match))
                         {
-                            found = true;
                             modelo.addElement(f.getAbsoluteFile());
-                            //Lista.setModel(modelo);
                         }
                 }catch(Exception e){}
+                break;
+            case 6 : // java
+                if(JavaSelected)
+                try
+                {
+                    BufferedReader in = new BufferedReader(new FileReader(f));
+                    contenido = in.readLine();
+                    
+                    int c=0;
+                    
+                    while(contenido != null)
+                    {
+                        if(contenido.contains(match))
+                        {
+                            modelo.addElement(f.getAbsoluteFile());
+                            break;
+                        }
+                        contenido = in.readLine();
+                    }
+                }catch(Exception e){}
+                break;
+            case 7 : // C / C++
+                if(cppSelected)
+                try
+                {
+                    BufferedReader in = new BufferedReader(new FileReader(f));
+                    contenido = in.readLine();
+                    
+                    int c=0;
+                    
+                    while(contenido != null)
+                    {
+                        if(contenido.contains(match))
+                        {
+                            modelo.addElement(f.getAbsoluteFile());
+                            break;
+                        }
+                        contenido = in.readLine();
+                    }
+                }catch(Exception e){}
+                break;
         } 
     }
     
@@ -174,6 +209,12 @@ public class Buscador
             browseable = 4;
         else if(argFichero.endsWith(".rtf"))
             browseable = 5;
+        else if(argFichero.endsWith(".java"))
+            browseable = 6;
+        else if(argFichero.endsWith(".c"))
+            browseable = 7;
+        else if(argFichero.endsWith(".cpp"))
+            browseable = 7;
         
         return browseable;
     }
@@ -183,9 +224,7 @@ public class Buscador
         File[] lista = argFile.listFiles();
 
         if (lista != null)
-        {
-            lista = reordenar(lista);
-            
+        {            
             for (File elemento : lista) 
                 if (elemento.isDirectory())
                 {
@@ -194,10 +233,9 @@ public class Buscador
                 else if (elemento.getName().contains(argFichero)) 
                 {
                     modelo.addElement(elemento.getAbsoluteFile());
-                    Lista.removeAll();
-                    Lista.setModel(modelo);
                 }
         }
+        Lista.setModel(modelo);
     }
     
     public File[] reordenar(File[] m)
