@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.io.BufferedReader;
+import java.util.Random;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
@@ -19,15 +20,40 @@ import javax.swing.DefaultListModel;
 import javax.swing.JEditorPane;
 //import javax.swing.text.BadLocationException;
 import javax.swing.text.EditorKit;
+import javax.swing.SwingWorker;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import javax.swing.JLabel;
+import javax.swing.JButton;
 
-public class Buscador 
+public class Buscador extends SwingWorker<Integer, File>
 {
-
-    JList Lista;
-    DefaultListModel modelo;
+    private final JList Lista;
+    private final DefaultListModel modelo;
+    private final Random generator = new Random();
+    private final String match;
+    private final File directorio;
+    private final JLabel mensaje;
+    private final opciones seleccion;
+    private final JButton buscarPorContenido;
+    private final JButton buscarPorNombre;
+    private final JButton btnBorrar;
+    private final Interfaz_Buscador inter;
     
-    boolean DocXselected, DocSelected, PDFselected, TXTselected, RTFselected;
-    boolean JavaSelected, cppSelected;
+    public Buscador(JList list, DefaultListModel model, JLabel label, String match, File directorio,
+            opciones sel, JButton contenido, JButton nombre, JButton borrar, Interfaz_Buscador interfaz)
+    {
+        Lista = list;
+        mensaje = label;
+        modelo = model;
+        this.match = match;
+        this.directorio = directorio;
+        seleccion = sel;
+        buscarPorContenido = contenido;
+        buscarPorNombre = nombre;
+        btnBorrar = borrar;
+        inter = interfaz;
+    }
     
     public void buscarArchivoporContenido(File argFile, String match)
     {
@@ -37,19 +63,22 @@ public class Buscador
 
         if (lista != null)
         {
-            lista = reordenar(lista);
-
             for (File elemento : lista) 
+            {
+                if(isCancelled())
+                    return ;
                 if (elemento.isDirectory())
                 {
+                    if(elemento.getPath().length() < 150)
+                        mensaje.setText(elemento.getPath());
                     buscarArchivoporContenido(elemento, match);
                 }
                 else if ((tipo = DocumentoBrowseable(elemento.getName())) > 0)
                 {
                     buscarContenidoenelArchivo(elemento, match, tipo);
                 }
+            }
         }
-        Lista.setModel(modelo);
     }
     
     
@@ -60,7 +89,7 @@ public class Buscador
         switch(tipo)
         {
             case 1 : // docx
-                if(DocXselected)
+                if(seleccion.DocXselected)
                 try
                 {
                     XWPFDocument docx = new XWPFDocument(new FileInputStream(f));
@@ -75,7 +104,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 2 : // doc
-                if(DocSelected)
+                if(seleccion.DocSelected)
                 try
                 {
                     HWPFDocument doc = new HWPFDocument(new FileInputStream(f));
@@ -90,7 +119,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 3 : // txt
-                if(TXTselected)
+                if(seleccion.TXTselected)
                 try
                 {
                     BufferedReader in = new BufferedReader(new FileReader(f));
@@ -110,7 +139,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 4 : // pdf
-                if(PDFselected)
+                if(seleccion.PDFselected)
                 try
                 {
                     PDDocument documento = null;
@@ -132,7 +161,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 5 : // rtf
-                if(RTFselected)
+                if(seleccion.RTFselected)
                 try
                 {
                     JEditorPane p = new JEditorPane();
@@ -153,7 +182,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 6 : // java
-                if(JavaSelected)
+                if(seleccion.JavaSelected)
                 try
                 {
                     BufferedReader in = new BufferedReader(new FileReader(f));
@@ -173,7 +202,7 @@ public class Buscador
                 }catch(Exception e){}
                 break;
             case 7 : // C / C++
-                if(cppSelected)
+                if(seleccion.cppSelected)
                 try
                 {
                     BufferedReader in = new BufferedReader(new FileReader(f));
@@ -219,36 +248,81 @@ public class Buscador
         return browseable;
     }
     
-    public void buscarPorNombre(String argFichero, File argFile)
-    {        
-        File[] lista = argFile.listFiles();
+
+    @Override
+    protected Integer doInBackground()
+    {
+        int x=0;
+        
+        int tipo;
+        
+        File[] lista = directorio.listFiles();
 
         if (lista != null)
-        {            
-            for (File elemento : lista) 
+        {
+            for (File elemento : lista)
+            {
+                setProgress(100*(x++)/lista.length);
+                if(isCancelled())
+                    return x;
+                try
+                {
+                    Thread.sleep(generator.nextInt(5));
+                }catch(InterruptedException e)
+                {
+                    
+                }
+                
                 if (elemento.isDirectory())
                 {
-                    buscarPorNombre(argFichero, elemento);
+                    if(elemento.getPath().length() < 150)
+                        mensaje.setText(elemento.getPath());
+                    buscarArchivoporContenido(elemento, match);
                 }
-                else if (elemento.getName().contains(argFichero)) 
+                else if ((tipo = DocumentoBrowseable(elemento.getName())) > 0)
                 {
-                    modelo.addElement(elemento.getAbsoluteFile());
+                    buscarContenidoenelArchivo(elemento, match, tipo);
                 }
+            }
+        }
+        
+        return x;
+    }   
+    
+    @Override
+    protected void done()
+    {
+        int EndProcess, n=0;
+        try
+        {
+            n = modelo.getSize();
+            EndProcess = get();
+            Lista.setModel(modelo);
+            setProgress(100);
+
+            if(n == 0)
+                mensaje.setText(" No se encontró ninguna coincidencia");
+            else if(n == 1)
+                mensaje.setText(" Listo!! se encontró 1 archivo");
+            else
+                mensaje.setText(" Listo!! se encontraron " + n + " archivos");
+        }
+        catch(InterruptedException ex)
+        {
+            mensaje.setText(" Proceso interrumpido ");
+        }
+        catch(ExecutionException ex)
+        {
+            mensaje.setText(" Proceso fallido");
+        }
+        catch(CancellationException ex)
+        {
+            mensaje.setText(" Proceso cancelado; " + n + " archivos encontrados");
         }
         Lista.setModel(modelo);
-    }
-    
-    public File[] reordenar(File[] m)
-    {
-        int i=0, j=m.length-1, k=m.length;
-        
-        File[] x = new File[k];
-        
-        for(File a : m)
-            if(a.isDirectory())
-                x[j--] = a;
-            else
-                x[i++] = a;
-        return x;
+        buscarPorNombre.setEnabled(true);
+        buscarPorContenido.setText("Buscar");
+        btnBorrar.setEnabled(true);
+        inter.CancelarPorContenido = false;
     }
 }

@@ -3,17 +3,29 @@ package buscador;
 import java.awt.Color;
 import java.io.File;
 import javax.swing.DefaultListModel;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
-public class Interfaz_Buscador extends javax.swing.JFrame 
+
+public class Interfaz_Buscador extends javax.swing.JFrame
 {
     Buscador objBuscarFichero;
+    BuscarPorNombre objBuscarpornombre;
+    DefaultListModel modelo;
+    opciones seleccion = new opciones();
     
-    public Interfaz_Buscador() {
+    boolean CancelarPorContenido = false;
+    boolean CancelarPorNombre = false;
+
+    public Interfaz_Buscador()
+    {
         initComponents();
-        objBuscarFichero = new Buscador();
+        jFileChooser1.setControlButtonsAreShown(false);
     }
 
-    
+
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
@@ -36,11 +48,14 @@ public class Interfaz_Buscador extends javax.swing.JFrame
         rbJava = new javax.swing.JRadioButton();
         rbCpp = new javax.swing.JRadioButton();
         btnBorrar = new javax.swing.JButton();
+        jProgressBar1 = new javax.swing.JProgressBar();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setResizable(false);
 
-        jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.FILES_AND_DIRECTORIES);
+        jFileChooser1.setFileFilter(null);
+        jFileChooser1.setFileHidingEnabled(false);
+        jFileChooser1.setFileSelectionMode(javax.swing.JFileChooser.DIRECTORIES_ONLY);
         jFileChooser1.setName(""); // NOI18N
 
         FileName.setFont(new java.awt.Font("Simplified Arabic Fixed", 0, 18)); // NOI18N
@@ -139,6 +154,8 @@ public class Interfaz_Buscador extends javax.swing.JFrame
             }
         });
 
+        jProgressBar1.setStringPainted(true);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -149,11 +166,11 @@ public class Interfaz_Buscador extends javax.swing.JFrame
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jScrollPane1)
                         .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jFileChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 577, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(18, 18, 18)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addGroup(layout.createSequentialGroup()
+                                .addComponent(jFileChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 577, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(18, 18, 18)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(rbTxt)
                                     .addComponent(rbDocX)
@@ -162,40 +179,41 @@ public class Interfaz_Buscador extends javax.swing.JFrame
                                     .addComponent(rbJava)
                                     .addComponent(rbRtf)
                                     .addComponent(rbCpp))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 123, Short.MAX_VALUE)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jButton1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(FileName, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel1))
-                                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                        .addComponent(Contenido, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addComponent(jLabel2))
-                                    .addComponent(btnBusquedaContenido, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                            .addComponent(mensaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(0, 0, Short.MAX_VALUE)
-                                .addComponent(btnBorrar)))
-                        .addGap(47, 47, 47))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addGap(8, 8, 8)
+                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(FileName, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 24, Short.MAX_VALUE)
+                                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                                    .addComponent(jLabel1)
+                                                    .addComponent(jLabel2))
+                                                .addGap(0, 0, Short.MAX_VALUE))
+                                            .addGroup(layout.createSequentialGroup()
+                                                .addComponent(Contenido, javax.swing.GroupLayout.PREFERRED_SIZE, 262, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                                .addComponent(btnBusquedaContenido, javax.swing.GroupLayout.PREFERRED_SIZE, 91, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                        .addComponent(btnBorrar))))
+                            .addComponent(mensaje, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                        .addGap(47, 47, 47))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, 577, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jFileChooser1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(33, 33, 33))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
-                                .addGap(5, 5, 5)
-                                .addComponent(FileName, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addGap(30, 30, 30)
+                                .addGap(44, 44, 44)
                                 .addComponent(rbDoc)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(rbDocX)
@@ -204,26 +222,34 @@ public class Interfaz_Buscador extends javax.swing.JFrame
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                                 .addComponent(rbPdf))
                             .addGroup(layout.createSequentialGroup()
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(rbRtf)))
-                        .addGap(6, 6, 6)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                .addGap(16, 16, 16)
+                                .addComponent(rbRtf))
                             .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel1)
+                                .addGap(5, 5, 5)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(FileName, javax.swing.GroupLayout.PREFERRED_SIZE, 47, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addGap(18, 18, 18)
                                 .addComponent(jLabel2)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(Contenido, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(btnBusquedaContenido, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(rbJava)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                                .addComponent(rbCpp)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnBorrar)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(Contenido, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(btnBusquedaContenido, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(rbJava)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(rbCpp)
+                            .addComponent(btnBorrar)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jFileChooser1, javax.swing.GroupLayout.PREFERRED_SIZE, 225, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(18, 18, 18)
-                        .addComponent(mensaje)
-                        .addGap(18, 18, 18)))
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 182, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(jProgressBar1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(mensaje)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 255, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -231,57 +257,89 @@ public class Interfaz_Buscador extends javax.swing.JFrame
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    
+    if(CancelarPorNombre)
+    {
+        objBuscarpornombre.cancel(true);
+        CancelarPorNombre = false;
+        jButton1.setText("Buscar");
+    }
+    else{
+    jProgressBar1.setValue(0);
+    modelo = new DefaultListModel();
+    String fichero = FileName.getText().trim();
+    File directorio = jFileChooser1.getSelectedFile();
+
+    if(directorio == null)
+        directorio = jFileChooser1.getCurrentDirectory();
+
+    ///////////////////////////////////////////////////////////////////////////////////////
+    mensaje.setText("");
+    mensaje.setForeground(Color.blue);
+    ///////////////////////////////////////////////////////////////////////////////////////
+
+    if(fichero.equalsIgnoreCase(""))
+    {
+        mensaje.setForeground(Color.red);
+        mensaje.setText(" Error : Debes introducir un nombre de archivo");
+    }
+    else
+    {
+        CancelarPorNombre = true;
+        jButton1.setText("Cancelar");
+        btnBusquedaContenido.setEnabled(false);
+        btnBorrar.setEnabled(false);
         
-        objBuscarFichero.Lista = Lista;
-        objBuscarFichero.modelo = new DefaultListModel();
-        String fichero = FileName.getText().trim();
-        File directorio = jFileChooser1.getCurrentDirectory();
-        
-        long tiempo;
-        ///////////////////////////////////////////////////////////////////////////////////////
-        mensaje.setText("");
-        mensaje.setForeground(Color.blue);
-        ///////////////////////////////////////////////////////////////////////////////////////
-        
-        if(fichero.equalsIgnoreCase(""))
+        objBuscarpornombre = new BuscarPorNombre(Lista, modelo, mensaje, fichero, directorio,
+            btnBusquedaContenido, jButton1, btnBorrar, this);
+
+        objBuscarpornombre.addPropertyChangeListener(
+                new PropertyChangeListener()
+                {
+                    @Override
+                    public void propertyChange( PropertyChangeEvent e)
+                    {
+                        if(e.getPropertyName().equals("progress"))
+                        {
+                            int porcentaje = (Integer)e.getNewValue();
+                            jProgressBar1.setValue(porcentaje);
+                        }
+                    }
+                });
+        try
         {
-            mensaje.setForeground(Color.red);
-            mensaje.setText(" Error : Debes introducir un nombre de archivo");
-        }
-        else
-        {
-            tiempo = System.currentTimeMillis();
-            objBuscarFichero.buscarPorNombre(fichero, directorio);
-            tiempo = System.currentTimeMillis() - tiempo;
-            tiempo = tiempo/1000;
-            
-            int n = objBuscarFichero.modelo.getSize();
-            
-            if(n == 0)
-                mensaje.setText(" No se encontró ninguna coincidencia ");
-            else if(n == 1)
-                mensaje.setText(" Listo!! se encontró 1 archivo   : " + tiempo + " seg");
-            else
-                mensaje.setText(" Listo!! se encontraron " + n + " archivos   : " + tiempo + " seg");
-        }
+            objBuscarpornombre.execute();
+        }catch(Exception ex){}
+    }
+    }
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void btnBusquedaContenidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnBusquedaContenidoActionPerformed
-
-        objBuscarFichero.Lista = Lista;
-        objBuscarFichero.modelo = new DefaultListModel();
+        
+        if(CancelarPorContenido)
+        {
+            objBuscarFichero.cancel(true);
+            CancelarPorContenido = false;
+            btnBusquedaContenido.setText("Buscar");
+        }
+        else{
+        jProgressBar1.setValue(0);
+        modelo = new DefaultListModel();
         String match = Contenido.getText().trim();
-        File directorio = jFileChooser1.getCurrentDirectory();
+        File directorio = jFileChooser1.getSelectedFile();
+
+        if(directorio == null)
+            directorio = jFileChooser1.getCurrentDirectory();
 
         ///////////////////////////////////////////////////////////////////////////////////////
         mensaje.setText("");
         mensaje.setForeground(Color.blue);
         ///////////////////////////////////////////////////////////////////////////////////////
-        boolean seleccionVacia = !(objBuscarFichero.DocSelected || objBuscarFichero.DocXselected ||
-                                   objBuscarFichero.PDFselected || objBuscarFichero.RTFselected  || 
-                                   objBuscarFichero.TXTselected || objBuscarFichero.JavaSelected ||
-                                   objBuscarFichero.cppSelected);
-        
+        boolean seleccionVacia = !(seleccion.DocSelected || seleccion.DocXselected ||
+                                   seleccion.PDFselected || seleccion.RTFselected  ||
+                                   seleccion.TXTselected || seleccion.JavaSelected ||
+                                   seleccion.cppSelected);
+
         if(seleccionVacia)
         {
             mensaje.setForeground(Color.red);
@@ -295,44 +353,63 @@ public class Interfaz_Buscador extends javax.swing.JFrame
         }
         else
         {
-            objBuscarFichero.buscarArchivoporContenido(directorio, match);
+            btnBorrar.setEnabled(false);
+            jButton1.setEnabled(false);
+            btnBusquedaContenido.setText("Cancelar");
+            CancelarPorContenido = true;
             
-            int n = objBuscarFichero.modelo.getSize();
-            if(n == 0)
-                mensaje.setText(" No se encontró ninguna coincidencia ");
-            else if(n == 1)
-                mensaje.setText(" Listo!! se encontró 1 archivo");
-            else
-                mensaje.setText(" Listo!! se encontraron " + n + " archivos");
+            objBuscarFichero = new Buscador(Lista, modelo, mensaje, match, directorio, seleccion,
+                btnBusquedaContenido, jButton1, btnBorrar, this);
+            
+            objBuscarFichero.addPropertyChangeListener(
+                new PropertyChangeListener()
+                {
+                    @Override
+                    public void propertyChange( PropertyChangeEvent e)
+                    {
+                        if(e.getPropertyName().equals("progress"))
+                        {
+                            int porcentaje = (Integer)e.getNewValue();
+                            jProgressBar1.setValue(porcentaje);
+                        }
+                    }
+                });
+        try
+        {
+            objBuscarFichero.execute();
+        }catch(Exception ex){}
+
+
+        }
         }
     }//GEN-LAST:event_btnBusquedaContenidoActionPerformed
 
     private void rbDocStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbDocStateChanged
-            objBuscarFichero.DocSelected = !objBuscarFichero.DocSelected;
+            seleccion.DocSelected = !seleccion.DocSelected;
     }//GEN-LAST:event_rbDocStateChanged
 
     private void rbDocXStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbDocXStateChanged
-            objBuscarFichero.DocXselected = !objBuscarFichero.DocXselected;
+            seleccion.DocXselected = !seleccion.DocXselected;
     }//GEN-LAST:event_rbDocXStateChanged
 
     private void rbTxtStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbTxtStateChanged
-            objBuscarFichero.TXTselected = !objBuscarFichero.TXTselected;
+            seleccion.TXTselected = !seleccion.TXTselected;
     }//GEN-LAST:event_rbTxtStateChanged
 
     private void rbPdfStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbPdfStateChanged
-            objBuscarFichero.PDFselected = !objBuscarFichero.PDFselected;
+            seleccion.PDFselected = !seleccion.PDFselected;
     }//GEN-LAST:event_rbPdfStateChanged
 
     private void rbRtfStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbRtfStateChanged
-            objBuscarFichero.RTFselected = !objBuscarFichero.RTFselected;
+            seleccion.RTFselected = !seleccion.RTFselected;
     }//GEN-LAST:event_rbRtfStateChanged
 
     private void rbJavaStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbJavaStateChanged
-            objBuscarFichero.JavaSelected = !objBuscarFichero.JavaSelected;
+            seleccion.JavaSelected = !seleccion.JavaSelected;
     }//GEN-LAST:event_rbJavaStateChanged
 
     private void rbCppStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_rbCppStateChanged
-            objBuscarFichero.cppSelected = !objBuscarFichero.cppSelected;
+            seleccion.cppSelected = !seleccion.cppSelected;
     }//GEN-LAST:event_rbCppStateChanged
 
     private void ListaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_ListaMouseClicked
@@ -347,13 +424,14 @@ public class Interfaz_Buscador extends javax.swing.JFrame
         FileName.setText(" ");
         Contenido.setText(" ");
         Lista.setModel(new DefaultListModel());
+        jProgressBar1.setValue(0);
     }//GEN-LAST:event_btnBorrarActionPerformed
 
     /**
      * @param args the command line arguments
      */
     public static void main(String args[]) {
-        
+
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 new Interfaz_Buscador().setVisible(true);
@@ -368,9 +446,10 @@ public class Interfaz_Buscador extends javax.swing.JFrame
     private javax.swing.JButton btnBorrar;
     private javax.swing.JButton btnBusquedaContenido;
     private javax.swing.JButton jButton1;
-    private javax.swing.JFileChooser jFileChooser1;
+    public javax.swing.JFileChooser jFileChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JProgressBar jProgressBar1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel mensaje;
     private javax.swing.JRadioButton rbCpp;
